@@ -65,6 +65,16 @@ call_bcv(u16 seg, u16 ip)
     __callrom(MAKE_FLATPTR(seg, 0), ip, 0);
 }
 
+// Detect if we deal with ATI/AMD ATOM BIOS bytecode ROM
+// That code is not "valid" for execution by a processor without a proper parser
+static int detect_ati_atom_bios(struct rom_header *rom)
+{
+    const char* ati_bios_sig = " 761295520"; 
+    if (!strcmp(ati_bios_sig, (u8*)rom + 0x30))
+        return 1;
+    return 0;
+}
+
 // Verify that an option rom looks valid
 static int
 is_valid_rom(struct rom_header *rom)
@@ -82,6 +92,10 @@ is_valid_rom(struct rom_header *rom)
                 , rom, len, sum);
         if (EnforceChecksum)
             return 0;
+    }
+    if (detect_ati_atom_bios(rom)) {
+        dprintf(1, "Found option rom with ATI/AMD ATOM BIOS code\n");
+        return 0;
     }
     return 1;
 }
