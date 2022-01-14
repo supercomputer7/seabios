@@ -224,6 +224,14 @@ static void storage_ide_setup(struct pci_device *pci, void *arg)
     pci_set_io_region_addr(pci, 3, PORT_ATA2_CTRL_BASE, 0);
 }
 
+/* ICH6/ICH7 IDE */
+static void ich6_ide_setup(struct pci_device *pci, void *arg)
+{
+    u16 bdf = pci->bdf;
+    pci_config_writew(bdf, 0x40, 0x8000); // enable IDE0
+    pci_config_writew(bdf, 0x42, 0x8000); // enable IDE1
+}
+
 /* PIIX3/PIIX4 IDE */
 static void piix_ide_setup(struct pci_device *pci, void *arg)
 {
@@ -343,6 +351,8 @@ static const struct pci_device_id pci_device_tbl[] = {
                      PCI_CLASS_STORAGE_IDE, piix_ide_setup),
     PCI_DEVICE_CLASS(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82371AB,
                      PCI_CLASS_STORAGE_IDE, piix_ide_setup),
+    PCI_DEVICE_CLASS(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82801GB,
+                     PCI_CLASS_STORAGE_IDE, ich6_ide_setup),
     PCI_DEVICE_CLASS(PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_STORAGE_IDE,
                      storage_ide_setup),
 
